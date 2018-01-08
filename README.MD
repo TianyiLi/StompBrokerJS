@@ -37,7 +37,7 @@ var StompServer = require('stompServer');
 
 var server = http.createServer();
 var stompServer = new StompServer({server: server});
-
+stompServer.start();
 server.listen(61614);
 
 stompServer.subscribe("/**", function(msg, headers) {
