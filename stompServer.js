@@ -3,6 +3,20 @@ var http = require("http");
 var WebSocketServer = require('ws').Server;
 var EventEmitter = require('events');
 var util = require('util');
+/**
+ * Promise sequence solution
+ * @param {any[]} tasks 
+ */
+function sequenceTasks(tasks) {
+  function recordValue(results, value) {
+    results.push(value);
+    return results;
+  }
+  var pushValue = recordValue.bind(null, []);
+  return tasks.reduce(function (promise, task) {
+    return promise.then(task).then(pushValue);
+  }, Promise.resolve());
+}
 
 /**
  * STOMP Server configuration
@@ -36,32 +50,44 @@ var StompServer = function (config) {
 
   this.subscribes = [];
   this.frameHandler = new stomp.FrameHandler(this);
-  this.heartBeatConfig = {client: 0, server: 0};
-
-
-  this.socket = new WebSocketServer({
-    server: this.conf.server,
-    path: this.conf.path,
-    perMessageDeflate: false
-  });
+  this.heartBeatConfig = { client: 0, server: 0 };
 
   /**
-   * Client connecting event, emitted after socket is opened.
-   * @event StompServer#connecting
-   * @type {object}
-   * @property {string} sessionId
-   * */
-  this.socket.on('connection', function (webSocket) {
-    webSocket.sessionId = stomp.StompUtils.genId();
-    this.emit('connecting', webSocket.sessionId);
-    this.conf.debug("Connect", webSocket.sessionId);
-    webSocket.on('message', parseRequest.bind(this, webSocket));
-    webSocket.on('close', connectionClose.bind(this, webSocket));
-    webSocket.on('error', function (err) {
-      this.conf.debug(err);
-      this.emit('error', err);
-    }.bind(this));
-  }.bind(this));
+   * Start the server
+   */
+  this.start = function () {
+    var onConnection = function (webSocket) {
+      webSocket.sessionId = stomp.StompUtils.genId();
+      this.emit('connecting', webSocket.sessionId);
+      this.conf.debug("Connect", webSocket.sessionId);
+      webSocket.on('message', parseRequest.bind(this, webSocket));
+      webSocket.on('close', connectionClose.bind(this, webSocket));
+      webSocket.on('error', function (err) {
+        this.conf.debug(err);
+        this.emit('error', err);
+      }.bind(this));
+    }.bind(this);
+    var createWebSocketServer = function(){
+      return new WebSocketServer({
+        server,
+        path: this.conf.path,
+        perMessageDeflate: false
+      });
+    }.bind(this);
+
+    if (this.conf.server instanceof Array) {
+      var _servers = this.conf.server.map(server => () => {
+        let socket = createWebSocketServer();
+        onConnection(socket);
+      });
+      sequenceTasks(_servers)
+      return this;
+    } else {
+      let socket = createWebSocketServer();
+      socket.on('connection', ws => onConnection(ws));
+      return this;
+    }
+  }
 
   /*############# EVENTS ###################### */
 
@@ -73,7 +99,7 @@ var StompServer = function (config) {
    * @property {object} headers
    * */
   this.onClientConnected = function (socket, args) {
-    socket.clientHeartBeat = {client: args.hearBeat[0], server: args.hearBeat[1]};
+    socket.clientHeartBeat = { client: args.hearBeat[0], server: args.hearBeat[1] };
     this.conf.debug("CONNECT", socket.sessionId, socket.clientHeartBeat, args.headers);
     this.emit('connected', socket.sessionId, args.headers);
     return true;
@@ -119,7 +145,7 @@ var StompServer = function (config) {
       }
     }
     args.frame = frame;
-    this.emit('send', {frame: {headers: frame.headers, body: bodyObj}, dest: args.dest});
+    this.emit('send', { frame: { headers: frame.headers, body: bodyObj }, dest: args.dest });
     this._sendToSubscriptions(socket, args);
     if (callback) {
       callback(true);

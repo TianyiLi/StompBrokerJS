@@ -1,17 +1,13 @@
 var http = require("http");
 var StompServer = require('../stompServer');
 
-var testCase = require('mocha').describe;
-var before = require('mocha').before;
-var after = require('mocha').after;
-var assertions = require('mocha').it;
 var assert = require('chai').assert;
 
 
 var server = http.createServer();
 var stompServer = new StompServer({server: server});
 
-testCase('StompServer', function() {
+describe('StompServer', function() {
 
   before(function() {
     server.listen(61614);
@@ -21,8 +17,8 @@ testCase('StompServer', function() {
     server.close();
   });
 
-  testCase('#send', function() {
-    assertions('check msg and topic subscription', function() {
+  describe('#send', function() {
+    it('check msg and topic subscription', function() {
       var headers = {'id': 'sub-0'};
       stompServer.subscribe("/**", function(msg, headers) {
         var topic = headers.destination;
@@ -33,8 +29,8 @@ testCase('StompServer', function() {
     });
   });
 
-  testCase('#unsubscribe', function() {
-    assertions('check topic unsubscribe', function() {
+  describe('#unsubscribe', function() {
+    it('check topic unsubscribe', function() {
       var headers = {'id': 'sub-0'};
       stompServer.subscribe("/**", function(msg, headers) {
         var subId = headers.subscription;

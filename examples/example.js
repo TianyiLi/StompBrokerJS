@@ -2,11 +2,12 @@ var http = require("http");
 var StompServer = require('../stompServer');
 
 var server = http.createServer();
-var stompServer = new StompServer({server: server});
+var stompServer = new StompServer({ server: server });
+stompServer.start();
 
 server.listen(61614);
 
-stompServer.subscribe("/**", function(msg, headers) {
+stompServer.subscribe("/**", function (msg, headers) {
   var topic = headers.destination;
   console.log(topic, "->{" + (typeof msg) + "}", msg, headers);
 });

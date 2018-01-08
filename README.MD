@@ -81,6 +81,7 @@ stompServer.send('/test', {}, 'testMsg');
     * [.onUnsubscribe()](#StompServer+onUnsubscribe) ⇒ <code>boolean</code>
     * [.subscribe(topic, [callback], headers)](#StompServer+subscribe) ⇒ <code>string</code>
     * [.unsubscribe(id)](#StompServer+unsubscribe) ⇒ <code>boolean</code>
+    * [.start()](#StompServer+start)
     * [.send(topic, headers, body)](#StompServer+send)
     * [.frameSerializer(frame)](#StompServer+frameSerializer) ⇒ <code>[MsgFrame](#MsgFrame)</code>
     * [.frameParser(frame)](#StompServer+frameParser) ⇒ <code>[MsgFrame](#MsgFrame)</code>
@@ -136,6 +137,17 @@ Unsubscribe topic with subscription id
 | Param | Type | Description |
 | --- | --- | --- |
 | id | <code>string</code> | Subscription id |
+
+<a name="StompServer+start"></a>
+
+### stompServer.start()</code>
+Start the server
+
+**Kind**: instance method of <code>[StompServer](#StompServer)</code>  
+**Returns**: <code>[StompServer](#StompServer)</code> - StompServer
+
+| Param | Type | Description |
+| --- | --- | --- |
 
 <a name="StompServer+send"></a>
 
@@ -271,7 +283,7 @@ STOMP Server configuration
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| server | <code>http.Server</code> |  | Http server reference |
+| [server] | <code>http.Server</code> |  | Http server reference |
 | [debug] | <code>function</code> | <code>function(args) {}</code> | Debug function |
 | [path] | <code>string</code> | <code>&quot;/stomp&quot;</code> | Websocket path |
 
