@@ -67,7 +67,7 @@ var StompServer = function (config) {
         this.emit('error', err);
       }.bind(this));
     }.bind(this);
-    var createWebSocketServer = function(){
+    var createWebSocketServer = function(server){
       return new WebSocketServer({
         server,
         path: this.conf.path,
@@ -77,13 +77,13 @@ var StompServer = function (config) {
 
     if (this.conf.server instanceof Array) {
       var _servers = this.conf.server.map(server => () => {
-        let socket = createWebSocketServer();
+        let socket = createWebSocketServer(server);
         onConnection(socket);
       });
       sequenceTasks(_servers)
       return this;
     } else {
-      let socket = createWebSocketServer();
+      let socket = createWebSocketServer(this.conf.server);
       socket.on('connection', ws => onConnection(ws));
       return this;
     }
