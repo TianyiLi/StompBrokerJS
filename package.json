@@ -29,12 +29,12 @@
   },
   "homepage": "https://github.com/4ib3r/StompBrokerJS#readme",
   "dependencies": {
+    "minimist": "^1.2.0",
     "ws": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "^9.3.0",
     "chai": "^4.1.2",
-    "minimist": "^1.2.0",
     "mocha": "^4.0.1",
     "stompjs": "^2.3.3"
   }
