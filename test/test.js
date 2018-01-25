@@ -11,6 +11,7 @@ describe('StompServer', function() {
 
   before(function() {
     server.listen(61614);
+    stompServer.start()
   });
 
   after(function() {
