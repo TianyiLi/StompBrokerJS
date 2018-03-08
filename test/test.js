@@ -5,7 +5,7 @@ var assert = require('chai').assert;
 
 
 var server = http.createServer();
-var stompServer = new StompServer({server: server});
+var stompServer = new StompServer({server: server, path:['/stomp/app', '/stomp/websocket']});
 
 describe('StompServer', function() {
 

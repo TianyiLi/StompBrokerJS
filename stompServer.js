@@ -1,14 +1,15 @@
-var stomp = require('./lib/stomp');
-var http = require("http");
-var WebSocketServer = require('ws').Server;
-var EventEmitter = require('events');
-var util = require('util');
+const stomp = require('./lib/stomp');
+const http = require("http");
+const WebSocketServer = require('ws').Server;
+const EventEmitter = require('events');
+const url = require('url')
+const util = require('util');
 /**
  * Promise sequence solution
  * @param {any[]} tasks 
  */
-function sequenceTasks(tasks) {
-  function recordValue(results, value) {
+function sequenceTasks (tasks) {
+  function recordValue (results, value) {
     results.push(value);
     return results;
   }
@@ -21,9 +22,9 @@ function sequenceTasks(tasks) {
 /**
  * STOMP Server configuration
  * @typedef {object} ServerConfig
- * @param {http.Server} server Http server reference
- * @param {function} [debug=function(args) {}] Debug function
- * @param {string} [path=/stomp] Websocket path
+ * @prop {http.Server} server Http server reference
+ * @prop {function} [debug=function(args) {}] Debug function
+ * @prop {string} [path=/stomp] Websocket path
  * */
 
 
@@ -67,12 +68,30 @@ var StompServer = function (config) {
         this.emit('error', err);
       }.bind(this));
     }.bind(this);
-    var createWebSocketServer = function(server){
-      return new WebSocketServer({
-        server,
-        path: this.conf.path,
+    var createWebSocketServer = function (server) {
+      let webSocket = new WebSocketServer({
+        noServer: true,
         perMessageDeflate: false
+      })
+      let _path = {},
+        _route = () => webSocket,
+        configPath = this.conf.path
+      configPath = configPath instanceof Array ? configPath : [configPath]
+      configPath.forEach(path => {
+        _path[path] = _route
+      })
+      server.on('upgrade', (request, socket, head) => {
+        const pathname = url.parse(request.url).pathname;
+        try {
+          let _webSocket = _path[pathname]()
+          _webSocket.handleUpgrade(request, socket, head, (ws) => {
+            webSocket.emit('connection', ws);
+          });
+        } catch (error) {
+          socket.destroy()
+        }
       });
+      return webSocket
     }.bind(this);
 
     if (this.conf.server instanceof Array) {
@@ -336,7 +355,7 @@ var StompServer = function (config) {
 
   /* ############# END FUNCTIONS ###################### */
 
-  function connectionClose(socket) {
+  function connectionClose (socket) {
     var self = this;
     for (var t in self.subscribes) {
       var sub = self.subscribes[t];
@@ -373,7 +392,7 @@ var StompServer = function (config) {
     return frame;
   };
 
-  function parseRequest(socket, data) {
+  function parseRequest (socket, data) {
     var frame = stomp.StompUtils.parseFrame(data);
     var cmdFunc = this.frameHandler[frame.command];
     if (cmdFunc) {

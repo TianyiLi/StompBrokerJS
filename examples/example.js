@@ -2,7 +2,7 @@ var http = require("http");
 var StompServer = require('../stompServer');
 
 var server = http.createServer();
-var stompServer = new StompServer({ server: server });
+var stompServer = new StompServer({ server: server, path:['/stomp', '/stomp/websocket'] });
 stompServer.start();
 
 server.listen(61614);

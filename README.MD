@@ -285,7 +285,7 @@ STOMP Server configuration
 | --- | --- | --- | --- |
 | [server] | <code>http.Server</code> |  | Http server reference |
 | [debug] | <code>function</code> | <code>function(args) {}</code> | Debug function |
-| [path] | <code>string</code> | <code>&quot;/stomp&quot;</code> | Websocket path |
+| [path] | <code>string\|string[]</code> | <code>&quot;/stomp&quot;</code> | Websocket path |
 
 <a name="OnSubscribedMessageCallback"></a>
 
