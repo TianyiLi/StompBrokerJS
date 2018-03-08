@@ -10,8 +10,7 @@ var stompServer = new StompServer({ server: server, path: ['/stomp/app', '/stomp
 const service = new StompService()
 const service2 = new StompService()
 
-describe('StompServer', function () {
-
+describe('Stomp-Service', function () {
   before(async function () {
     let config1 = Object.assign({}, stompConfig)
     let config2 = Object.assign({}, stompConfig)
@@ -33,26 +32,18 @@ describe('StompServer', function () {
     service.disconnect()
     service2.disconnect()
   });
-
-  describe('#send', function () {
-    it('check msg and topic subscription', function () {
-      var headers = { 'id': 'sub-0' };
-      stompServer.subscribe("/**", function (msg, headers) {
-        var topic = headers.destination;
-        assert.equal(topic, '/data');
-        assert.equal(msg, 'test body');
-      }, headers);
-      stompServer.send('/data', {}, 'test body');
-    });
-  });
-
-  describe('#unsubscribe', function () {
-    it('check topic unsubscribe', function () {
-      var headers = { 'id': 'sub-0' };
-      stompServer.subscribe("/**", function (msg, headers) {
-        var subId = headers.subscription;
-        assert.isTrue(stompServer.unsubscribe(subId), 'unsubscribe successful, subId: ' + subId);
-      }, headers);
-    });
-  });
-});
+  it('stomp-service should be connected', function (done) {
+    service.on('connected', function () { done() })
+    service.start()
+  })
+  it('stomp-service should be connected', function (done) {
+    service2.on('connected', function () { done() })
+    service2.start()
+  })
+  it('send with stomp-service on different path', function (done) {
+    service.on('message', msg => {
+      done()
+    })
+    service2.emit('publish', {})
+  })
+})
